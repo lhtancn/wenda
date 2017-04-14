@@ -1,32 +1,42 @@
 package com.iip.dao;
 
+import com.iip.model.Comment;
 import com.iip.model.Question;
-import com.iip.model.User;
 import org.apache.ibatis.annotations.*;
 
+import java.awt.*;
 import java.util.List;
 
 /**
  * Created by Demo on 4/13/2017.
  */
 @Mapper
-public interface QuestionDAO {
-    String TABLE_NAME = "question";
-    String INSERT_FIELDS = " title, content, user_id, created_date, comment_count ";
+public interface CommentDAO {
+    String TABLE_NAME = "comment";
+    String INSERT_FIELDS = " content, created_date, user_id, entity_type, entity_id, status ";
     String SELECT_FIELDS = " id, " + INSERT_FIELDS;
 
     @Insert({"insert into ", TABLE_NAME, "(", INSERT_FIELDS,
-    ") Values (#{title}, #{content}, #{userId}, #{createdDate}, #{commentCount})"})
-    int addQuestion(Question question);
+    ") Values (#{content}, #{createdDate}, #{userId}, #{entityType}, #{entityId}, #{status})"})
+    int addComment(Comment comment);
 
-    List<Question> selectLatestQuestions(@Param("userId") int userId, @Param("offset") int offset,
-                                         @Param("limit") int limit);
+    @Select({"select ", SELECT_FIELDS, " from ", TABLE_NAME, " " +
+            "where entity_id = #{entityId} and entity_type = #{entityType} order by created_date desc"})
+    List<Comment> selectCommentByEntity(@Param("entityId") int entityId, @Param("entityType") int entityType);
+
+    @Select({"select count(id) from ", TABLE_NAME, " " +
+            "where entity_id = #{entityId} and entity_type = #{entityType}"})
+    int getCommentCount(@Param("entityId") int entityId, @Param("entityType") int entityType);
+
+    @Select({"select count(id) from ", TABLE_NAME, " " +
+            "where user_id = #{userId}"})
+    int getUserCommentCount(@Param("userId") int userId);
 
     @Select({"select ", SELECT_FIELDS, " from ", TABLE_NAME, " where id = #{id}"})
-    Question getById(int id);
+    Comment getCommentById(int id);
 
-    @Update({"update ", TABLE_NAME, " set comment_count = #{commentCount} where id = #{id}"})
+    @Update({"update ", TABLE_NAME, " set status = #{status} where id = #{id}"})
 //    int updateCommentCount(int id, int commentCount);          //两种获参方法
-    int updateCommentCount(@Param("id") int id, @Param("commentCount") int CommentCount);
+    int updateStatus(@Param("id") int id, @Param("status") int status);
 
 }
