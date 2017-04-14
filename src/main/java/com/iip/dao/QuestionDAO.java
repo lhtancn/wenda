@@ -13,10 +13,10 @@ import java.util.List;
 public interface QuestionDAO {
     String TABLE_NAME = "question";
     String INSERT_FIELDS = " title, content, user_id, created_date, comment_count ";
-    String SELECT_FIELDS = " id " + INSERT_FIELDS;
+    String SELECT_FIELDS = " id, " + INSERT_FIELDS;
 
     @Insert({"insert into ", TABLE_NAME, "(", INSERT_FIELDS,
-    "), Values (#{title}, #{content}, #{userId}, #{createdDate}, #{commentCount})"})
+    ") Values (#{title}, #{content}, #{userId}, #{createdDate}, #{commentCount})"})
     int addQuestion(Question question);
 
     List<Question> selectLatestQuestions(@Param("userId") int userId, @Param("offset") int offset,
