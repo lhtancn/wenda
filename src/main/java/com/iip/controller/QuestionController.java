@@ -2,8 +2,10 @@ package com.iip.controller;
 
 import com.iip.model.*;
 import com.iip.service.CommentService;
+import com.iip.service.LikeService;
 import com.iip.service.QuestionService;
 import com.iip.service.UserService;
+import com.iip.util.JedisAdapter;
 import com.iip.util.WendaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,9 @@ public class QuestionController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    LikeService likeService;
+
 
     @RequestMapping(value = {"/question/{questionId}"}, method = {RequestMethod.GET, RequestMethod.POST})
 //    @ResponseBody
@@ -50,6 +55,8 @@ public class QuestionController {
                 ViewObject comment = new ViewObject();
                 User user = userService.getUser(c.getUserId());
                 comment.set("comment", c);
+                comment.set("liked", likeService.getLikeStatus(user.getId(), EntityType.ENTITY_COMMENT, c.getId()));
+                comment.set("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, c.getId()));
                 comment.set("user", user);
                 comments.add(comment);
             }
