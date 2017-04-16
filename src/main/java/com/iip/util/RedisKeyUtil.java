@@ -1,7 +1,5 @@
 package com.iip.util;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * Created by Demo on 4/14/2017.
  */
@@ -12,6 +10,7 @@ public class RedisKeyUtil {
     private static String BIZ_EVENTQUEUE = "EVENT_QUEUE";
     private static String BIZ_FOLLOWER = "FOLLOWER";
     private static String BIZ_FOLLOWEE = "FOLLOWEE";
+    private static String BIZ_TIMELINE = "TIMELINE";
 
 
     public static String getLikeKey(int entityType, int entityId) {
@@ -32,5 +31,9 @@ public class RedisKeyUtil {
 
     public static String getFolloweeKey(int userId, int entityType) {
         return BIZ_LIKE + SPLIT + String.valueOf(userId) + SPLIT + String.valueOf(entityType);
+    }
+
+    public static String getTimeLineKey(int userId) {
+        return BIZ_TIMELINE + SPLIT + String.valueOf(userId);
     }
 }
