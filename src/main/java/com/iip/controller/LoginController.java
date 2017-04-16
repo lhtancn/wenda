@@ -1,5 +1,8 @@
 package com.iip.controller;
 
+import com.iip.async.EventModel;
+import com.iip.async.EventProducer;
+import com.iip.async.EventType;
 import com.iip.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -24,7 +27,10 @@ public class LoginController {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @Autowired
-    UserService userService;
+    private UserService userService;
+
+    @Autowired
+    private EventProducer eventProducer;
 
 
     @RequestMapping(value = {"/reg/"}, method = {RequestMethod.POST})
@@ -84,6 +90,10 @@ public class LoginController {
                     cookie.setMaxAge(3600 * 24 * 5);
                 }
                 response.addCookie(cookie);
+
+//                eventProducer.fireEvent(new EventModel(EventType.LOGIN).setExts("username", username).
+//                        setExts("email", "mailAddress"));
+
                 if(StringUtils.isNotBlank(next)) {
                     return "redirect:" + next;
                 }else {

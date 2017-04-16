@@ -22,14 +22,14 @@ import java.util.List;
  */
 @Component
 public class LikeHandler implements EventHandler {
-    @Autowired
-    LikeService likeService;
+//    @Autowired
+//    private LikeService likeService;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @Autowired
-    MessageService messageService;
+    private MessageService messageService;
 
 
     @Override
