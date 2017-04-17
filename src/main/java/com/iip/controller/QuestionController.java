@@ -1,5 +1,8 @@
 package com.iip.controller;
 
+import com.iip.async.EventModel;
+import com.iip.async.EventProducer;
+import com.iip.async.EventType;
 import com.iip.model.*;
 import com.iip.service.*;
 import com.iip.util.JedisAdapter;
@@ -40,6 +43,9 @@ public class QuestionController {
 
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private EventProducer eventProducer;
 
 
     @RequestMapping(value = {"/question/{questionId}"}, method = {RequestMethod.GET, RequestMethod.POST})
@@ -100,7 +106,12 @@ public class QuestionController {
             }else {
                 question.setUserId(WendaUtil.ANONYMOUS_USERID);
             }
+
+
             if(questionService.addQuestion(question) > 0) {
+                eventProducer.fireEvent(new EventModel(EventType.ADD_QUESTION).setEntityOwnerId(hostHolder.getUser().getId())
+                        .setEntityId(question.getId()).setEntityType(EntityType.ENTITY_QUESTION).setActorId(question.getId())
+                        .setExts("title", question.getTitle()).setExts("content", question.getContent()));
                 return WendaUtil.getJSONString(0);
             }
 
