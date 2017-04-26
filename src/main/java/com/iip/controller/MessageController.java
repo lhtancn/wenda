@@ -7,7 +7,6 @@ import com.iip.model.ViewObject;
 import com.iip.service.MessageService;
 import com.iip.service.UserService;
 import com.iip.util.WendaUtil;
-import org.apache.catalina.Host;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class MessageController {
             List<ViewObject> vos = new ArrayList<>();
             for(Message message : messageList) {
                 ViewObject vo = new ViewObject();
-                vo.set("conversation", message);
+                vo.set("message", message);
                 int unread = messageService.getConversationUnreadCount(localUserId, message.getConversationId());
                 vo.set("unread", unread);
 

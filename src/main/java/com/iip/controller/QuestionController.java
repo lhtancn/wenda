@@ -1,9 +1,11 @@
 package com.iip.controller;
 
+import com.iip.async.EventModel;
+import com.iip.async.EventProducer;
+import com.iip.async.EventType;
 import com.iip.model.*;
-import com.iip.service.CommentService;
-import com.iip.service.QuestionService;
-import com.iip.service.UserService;
+import com.iip.service.*;
+import com.iip.util.JedisAdapter;
 import com.iip.util.WendaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,16 @@ public class QuestionController {
     private CommentService commentService;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
+
+    @Autowired
+    private EventProducer eventProducer;
 
 
     @RequestMapping(value = {"/question/{questionId}"}, method = {RequestMethod.GET, RequestMethod.POST})
@@ -45,15 +56,34 @@ public class QuestionController {
             Question question = questionService.getById(questionId);
             List<Comment> commentList = commentService.getCommentByEntity(questionId, EntityType.ENTITY_QUESTION);
             List<ViewObject> comments = new ArrayList<>();
+
+
+
             model.addAttribute("question", question);
             for(Comment c : commentList) {
                 ViewObject comment = new ViewObject();
                 User user = userService.getUser(c.getUserId());
                 comment.set("comment", c);
+                comment.set("liked", likeService.getLikeStatus(user.getId(), EntityType.ENTITY_COMMENT, c.getId()));
+                comment.set("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, c.getId()));
                 comment.set("user", user);
                 comments.add(comment);
             }
             model.addAttribute("comments", comments);
+
+            List<User> followUsers = new ArrayList<>();
+            List<Integer> followUserIds = followService.getFollowers(EntityType.ENTITY_QUESTION, questionId, 10);
+            for (Integer id : followUserIds) {
+                followUsers.add(userService.getUser(id));
+            }
+            model.addAttribute("followUsers", followUsers);
+            if(hostHolder.getUser() != null) {
+                model.addAttribute("followed", followService.isFollower(hostHolder.getUser().getId(),
+                        EntityType.ENTITY_QUESTION, questionId));
+            }else {
+                model.addAttribute("followed", false);
+            }
+
 
         }catch (Exception e) {
             logger.error("failed." + e.getMessage());
@@ -76,7 +106,12 @@ public class QuestionController {
             }else {
                 question.setUserId(WendaUtil.ANONYMOUS_USERID);
             }
+
+
             if(questionService.addQuestion(question) > 0) {
+                eventProducer.fireEvent(new EventModel(EventType.ADD_QUESTION).setEntityOwnerId(hostHolder.getUser().getId())
+                        .setEntityId(question.getId()).setEntityType(EntityType.ENTITY_QUESTION).setActorId(question.getId())
+                        .setExts("title", question.getTitle()).setExts("content", question.getContent()));
                 return WendaUtil.getJSONString(0);
             }
 
